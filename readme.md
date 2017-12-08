@@ -1,0 +1,1 @@
+Put the files that you want Dota 2 to find and run in the top level (here)
