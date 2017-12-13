@@ -56,7 +56,7 @@ end--]]
 
 
 --State machine shit
---Ian
+
 --Constants for states
 local LANE = 1;
 local PUSH = 2;
