@@ -1,68 +1,13 @@
 
---[[require( GetScriptDirectory().."/constants" )
-
-local heroData = require( GetScriptDirectory().."/hero_data" )
-local utils = require( GetScriptDirectory().."/utility" )
-local dt = require( GetScriptDirectory().."/decision" )
-local gHeroVar = require( GetScriptDirectory().."/global_hero_data" )
-local ability = require( GetScriptDirectory().."/abilityUse/abilityUse_nevermore" )
-
-local SKILL_Q = heroData.nevermore.SKILL_0 -- 1 & 2 are the other razes
-local SKILL_W = heroData.nevermore.SKILL_3
-local SKILL_E = heroData.nevermore.SKILL_4
-local SKILL_R = heroData.nevermore.SKILL_5
-
-local TALENT1 = heroData.nevermore.TALENT_0
-local TALENT2 = heroData.nevermore.TALENT_1
-local TALENT3 = heroData.nevermore.TALENT_2
-local TALENT4 = heroData.nevermore.TALENT_3
-local TALENT5 = heroData.nevermore.TALENT_4
-local TALENT6 = heroData.nevermore.TALENT_5
-local TALENT7 = heroData.nevermore.TALENT_6
-local TALENT8 = heroData.nevermore.TALENT_7
-
-local AbilityPriority = {
-    SKILL_W,    SKILL_Q,    SKILL_Q,    SKILL_W,    SKILL_Q,
-    SKILL_W,    SKILL_Q,    SKILL_W,    SKILL_R,    TALENT2,
-    SKILL_E,    SKILL_R,    SKILL_E,    SKILL_E,    TALENT4,
-    SKILL_E,    SKILL_R,    TALENT6,    TALENT7
-}
-
-local botSF = dt:new()
-
-function botSF:new(o)
-    o = o or dt:new(o)
-    setmetatable(o, self)
-    self.__index = self
-    return o
-end
-
-local nevermoreBot = botSF:new{abilityPriority = AbilityPriority}
-
-function nevermoreBot:DoHeroSpecificInit(bot)
-end
-
-function nevermoreBot:ConsiderAbilityUse()
-    return ability.AbilityUsageThink(GetBot())
-end
-
-function nevermoreBot:GetNukeDamage(bot, target)
-    return ability.nukeDamage( bot, target )
-end
-
-function nevermoreBot:QueueNuke(bot, target, actionQueue, engageDist)
-    return ability.queueNuke( bot, target, actionQueue, engageDist )
-end--]]
-
 
 --State machine shit
 
 --Constants for states
-local LANE = 1;
-local PUSH = 2;
-local DEFEND = 3;
-local ATTACK = 4;
-local RETREAT = 5;
+local LANE = 1; -- Laning involves staying in mid and last hitting creeps, this happens when the creeps are not near the ally tower or under the enemy tower
+local PUSH = 2; -- Pushing involves attacking the enemy tower, this happens when there are ally creeps under the enemy tower who are attacking the tower
+local DEFEND = 3; -- Defending involves attacking anything that is attacking the ally tower, this happens when enemy creeps or heroes are attacking the ally tower
+local ATTACK = 4; -- Attacking involves hitting and chasing an enemy hero, this happens when the enemy hero's health is low
+local RETREAT = 5; -- Retreating involves running back to base (or shrine?) to heal, this happens when the hero's health is low
 
 -- Holds the initial state
 local initialState = PUSH;
@@ -93,7 +38,8 @@ end
 
 function Think()
 	updateState();
-	--print("Applying state " .. currentState);
+	--print("Applying state " .. currentState);	
+
 	
 	if (currentState == LANE) then
 		laneThink();
@@ -193,6 +139,24 @@ end
 function defendUpdateState()
 end
 function defendThink()
+
+	print("in defendThink");
+	local bot = GetBot();
+	
+	
+	-- where bot needs to go
+	local target;
+	
+	-- determine where mid tower is 
+	if (bot:GetPlayerID() == 9) then -- bot is Dire
+		target = GetLocationAlongLane(LANE_MID, 0.51);
+	elseif (bot:GetPlayerID() == 4) then -- bot is Radiant
+		target = GetLocationAlongLane(LANE_MID, 0.45);
+	end
+	
+	-- attack anything that is near the tower
+	bot:Action_AttackMove(target);
+
 end
 
 -- Attack
