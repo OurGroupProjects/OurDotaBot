@@ -168,20 +168,21 @@ function pushThink()
 			enemyBot = enemyList[i];
 		end
 	end
-	local target
+	
+	local target;
 	if (bot:GetPlayerID() == 4) then
-		target = GetLaneFrontLocation(TEAM_RADIANT, LANE_MID, -100);
+		target = GetLaneFrontLocation(TEAM_RADIANT, LANE_MID, -200);
 	end
 	if (bot:GetPlayerID() == 9) then
-		target = GetLaneFrontLocation(TEAM_DIRE, LANE_MID, -100);
+		target = GetLaneFrontLocation(TEAM_DIRE, LANE_MID, -200);
 	end
-	--bot:Action_MoveToLocation(target);
 	
 	local attackableCreeps = bot:GetNearbyLaneCreeps(500, true);
 	
+	--Later, maybe make this prioritize low creeps, so it can get lh while pushing
 	if (table.getn(attackableCreeps) > 0) then
-		print("See attackable creep");	
-		bot:Action_AttackUnit(attackableCreeps[0], false);
+		print("See attackable creep");
+		bot:Action_AttackUnit(attackableCreeps[1], true);
 	else 
 		bot:Action_MoveToLocation(target);
 	end
