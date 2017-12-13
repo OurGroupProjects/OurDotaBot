@@ -163,6 +163,24 @@ end
 function attackUpdateState()
 end
 function attackThink()
+   -- Get current bot and enemy bot
+   local bot = GetBot();
+   local enemyBot;
+
+   -- get enemy hero list and loop through looking for the nevermore bots
+   local enemyList = GetUnitList(UNIT_LIST_ENEMY_HEROES);
+   local listLength = table.getn(enemyList);
+   --print("Number of enemies: " .. listLength);
+   for i = 1, listLength do
+      -- print("Enemy " .. i .. " is " .. enemyList[i]:GetPlayerID());
+      if (enemyList[i]:GetPlayerID() == 4 or enemyList[i]:GetPlayerID() == 9) then
+	 enemyBot = enemyList[i];
+      end
+   end
+
+   -- Temp to keep it alive
+   bot:Action_AttackUnit(enemyBot, false);
+
 end
 
 -- Retreat
