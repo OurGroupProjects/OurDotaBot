@@ -98,7 +98,7 @@ function laneUpdateState()
 end
 function laneThink()
 
-	print("Thinkin to lane");
+	--print("Thinkin to lane");
 	local bot = GetBot();
 	local enemyBot;
 	local enemyList = GetUnitList(UNIT_LIST_ENEMY_HEROES);
