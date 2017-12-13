@@ -187,6 +187,19 @@ end
 function retreatUpdateState()
 end
 function retreatThink()
+
+	print("in retreatThink");
+	local bot = GetBot();
+	
+	-- where bot needs to go
+	local target;
+	
+	-- determine where base is
+	target = GetLocationAlongLane(LANE_MID, .05);
+	
+	-- move to base
+	bot:Action_MoveToLocation(target);
+
 end
 
 ----------------------------------------------------------------------------------------------------
