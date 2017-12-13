@@ -121,17 +121,16 @@ function laneThink()
 	local attackableCreeps = bot:GetNearbyLaneCreeps(800, true);
 	local denyableCreeps = bot:GetNearbyLaneCreeps(800, false);
 	
-	--print("attackable is " .. #attackableCreeps);
-	--print("denyable is " .. #denyableCreeps);
 	
 	for i=1,#denyableCreeps do
         attackableCreeps[#attackableCreeps+1] = denyableCreeps[i]
     end
-    --print("attackable added is " .. #attackableCreeps);
+
 	local myDamage = bot:GetAttackDamage();
 	
 	local hitsAvailable = false;
 	
+	--Checks if There are creeps that can be last hit.
 	if (table.getn(attackableCreeps) > 0) then
 		for i = 1, table.getn(attackableCreeps) do
 			local creep = attackableCreeps[i];
@@ -143,36 +142,30 @@ function laneThink()
 					creepEHP = creepEHP - 17;
 				end
 			end
-			--print("b");
+
 			if (myDamage > creepEHP) then
-				--print("c");
-				--bot:Action_AttackUnit(attackableCreeps[i], true);
 				hitsAvailable = true;
 			end
 		end
 	end
 	
-	
+	--If there are creeps to last hit, hit them
 	if (hitsAvailable) then
-		print("a");
+
 		for i = 1, table.getn(attackableCreeps) do
 			local creep = attackableCreeps[i];
 			local creepHP = creep:GetHealth();
 			local creepEHP = creepHP;
 			if (creep:WasRecentlyDamagedByCreep(5)) then
 				if (creep:TimeSinceDamagedByCreep() > .6 and creep:TimeSinceDamagedByCreep() < 1) then
-					--print("e");
-					creepEHP = creepEHP - 17;
+					creepEHP = creepEHP - 17; --17 is aprox dmg of a creep melee
 				end
 			end
-			--print("b");
 			if (myDamage > creepEHP) then
-				--print("c");
 				bot:Action_AttackUnit(attackableCreeps[i], true);
 			end
 		end
-	else 
-		print("d");
+	else  -- Othwerwise, be a bit behind the creep wave
 		bot:Action_MoveToLocation(target);
 	end
 end
