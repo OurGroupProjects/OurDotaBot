@@ -112,29 +112,67 @@ function laneThink()
 	
 	local target;
 	if (bot:GetPlayerID() == 4) then
-		target = GetLaneFrontLocation(TEAM_RADIANT, LANE_MID, -200);
+		target = GetLaneFrontLocation(TEAM_RADIANT, LANE_MID, -300);
 	end
 	if (bot:GetPlayerID() == 9) then
-		target = GetLaneFrontLocation(TEAM_DIRE, LANE_MID, -200);
+		target = GetLaneFrontLocation(TEAM_DIRE, LANE_MID, -300);
 	end
 	
-	local attackableCreeps = bot:GetNearbyLaneCreeps(700, true);
+	local attackableCreeps = bot:GetNearbyLaneCreeps(800, true);
+	local denyableCreeps = bot:GetNearbyLaneCreeps(800, false);
 	
+	--print("attackable is " .. #attackableCreeps);
+	--print("denyable is " .. #denyableCreeps);
+	
+	for i=1,#denyableCreeps do
+        attackableCreeps[#attackableCreeps+1] = denyableCreeps[i]
+    end
+    --print("attackable added is " .. #attackableCreeps);
 	local myDamage = bot:GetAttackDamage();
 	
+	local hitsAvailable = false;
+	
 	if (table.getn(attackableCreeps) > 0) then
-		--print("a");
 		for i = 1, table.getn(attackableCreeps) do
-		local creep = attackableCreeps[i];
-		local creepHP = creep:GetHealth();
-		---print("b");
-			if (myDamage > creepHP) then
+			local creep = attackableCreeps[i];
+			local creepHP = creep:GetHealth();
+			local creepEHP = creepHP;
+			if (creep:WasRecentlyDamagedByCreep(5)) then
+				if (creep:TimeSinceDamagedByCreep() > .6 and creep:TimeSinceDamagedByCreep() < 1) then
+					--print("e");
+					creepEHP = creepEHP - 17;
+				end
+			end
+			--print("b");
+			if (myDamage > creepEHP) then
+				--print("c");
+				--bot:Action_AttackUnit(attackableCreeps[i], true);
+				hitsAvailable = true;
+			end
+		end
+	end
+	
+	
+	if (hitsAvailable) then
+		print("a");
+		for i = 1, table.getn(attackableCreeps) do
+			local creep = attackableCreeps[i];
+			local creepHP = creep:GetHealth();
+			local creepEHP = creepHP;
+			if (creep:WasRecentlyDamagedByCreep(5)) then
+				if (creep:TimeSinceDamagedByCreep() > .6 and creep:TimeSinceDamagedByCreep() < 1) then
+					--print("e");
+					creepEHP = creepEHP - 17;
+				end
+			end
+			--print("b");
+			if (myDamage > creepEHP) then
 				--print("c");
 				bot:Action_AttackUnit(attackableCreeps[i], true);
 			end
 		end
 	else 
-		--print("d");
+		print("d");
 		bot:Action_MoveToLocation(target);
 	end
 end
