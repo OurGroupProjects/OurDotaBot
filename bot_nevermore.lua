@@ -10,7 +10,7 @@ local ATTACK = 4; -- Attacking involves hitting and chasing an enemy hero, this 
 local RETREAT = 5; -- Retreating involves running back to base (or shrine?) to heal, this happens when the hero's health is low
 
 -- Holds the initial state
-local initialState = LANE;
+local initialState = PUSH;
 
 -- Holds the current state
 local currentState = initialState;
@@ -32,14 +32,14 @@ function updateState()
 		error("Unexpected state value");
 		currentState = LANE;
 	end;
-	 
+	 currentState = PUSH;
 
 end
 
 function Think()
 	updateState();
-	print("Applying state " .. currentState);
-	--currentState = DEFEND;
+	--print("Applying state " .. currentState);	
+
 	
 	if (currentState == LANE) then
 		laneThink();
@@ -103,6 +103,36 @@ end
 function pushUpdateState()
 end
 function pushThink()
+	--print("Thinkin to push");
+	local bot = GetBot();
+	local enemyBot;
+	local enemyList = GetUnitList(UNIT_LIST_ENEMY_HEROES);
+	local listLength = table.getn(enemyList);
+	for i = 1, listLength do
+		--print("Enemy " .. i .. " is " .. enemyList[i]:GetPlayerID());
+		if (enemyList[i]:GetPlayerID() == 4 or enemyList[i]:GetPlayerID() == 9) then
+			enemyBot = enemyList[i];
+		end
+	end
+	
+	local target;
+	if (bot:GetPlayerID() == 4) then
+		target = GetLaneFrontLocation(TEAM_RADIANT, LANE_MID, -200);
+	end
+	if (bot:GetPlayerID() == 9) then
+		target = GetLaneFrontLocation(TEAM_DIRE, LANE_MID, -200);
+	end
+	
+	local attackableCreeps = bot:GetNearbyLaneCreeps(500, true);
+	
+	--Later, maybe make this prioritize low creeps, so it can get lh while pushing
+	if (table.getn(attackableCreeps) > 0) then
+		print("See attackable creep");
+		bot:Action_AttackUnit(attackableCreeps[1], true);
+	else 
+		bot:Action_MoveToLocation(target);
+	end
+	
 end
 
 -- Defend
