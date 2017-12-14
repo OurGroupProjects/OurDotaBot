@@ -154,14 +154,7 @@ end
 -- Lane
 function laneUpdateState()
 	local bot = GetBot();
-	local enemyBot;
-	local enemyList = GetUnitList(UNIT_LIST_ENEMY_HEROES);
-	local listLength = table.getn(enemyList);
-	for i = 1, listLength do
-		if (enemyList[i]:GetPlayerID() == 4 or enemyList[i]:GetPlayerID() == 9) then
-			enemyBot = enemyList[i];
-		end
-	end
+	local enemyBot = getEnemyBot();
 	
 	local tower;
 	local creepsLoc;
@@ -187,10 +180,11 @@ function laneUpdateState()
 	elseif (bot:GetTeam() == 3) then
 		botTeamName = "Dire"
 	end;
+	
 	if (shouldRetreat()) then
 		currentState = RETREAT;
 		print(botTeamName .. " changing state from LANE TO RETREAT")
-	elseif (enemyGone()) then
+	elseif (enemyGone() and (DotaTime() > 0)) then
 		currentState = PUSH;
 		print(botTeamName .. " changing state from LANE TO PUSH")
 	elseif (creepsUnderTower) then
@@ -352,7 +346,7 @@ function pushThink()
 	--Later, maybe make this prioritize low creeps, so it can get lh while pushing
 	if (table.getn(attackableCreeps) > 0) then
 		bot:Action_AttackUnit(attackableCreeps[1], true);
-	elseif(#nearbyCreeps < 1) then
+	elseif(#nearbyCreeps < 1 and (GetUnitToUnitDistance(bot, tower) < 500)) then
 		bot:Action_AttackUnit(tower, false)
 	else 
 		bot:Action_MoveToLocation(target);
