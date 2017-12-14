@@ -393,7 +393,9 @@ end
 function enemyGone()
    local bot = GetBot()
    enemyBot = getEnemyBot()
-   return (GetUnitToUnitDistance(bot, enemyBot) > GONE_DISTANCE_CONSTANT or not enemyBot:CanBeSeen())
+   return (enemyBot == nil or GetUnitToUnitDistance(bot, enemyBot) > GONE_DISTANCE_CONSTANT)
+end
+
 -- Function to decide if the bot should retreat
 function shouldRetreat()
    local bot = GetBot()
