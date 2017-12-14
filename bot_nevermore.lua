@@ -141,7 +141,7 @@ function laneUpdateState()
 end
 function laneThink()
 
-	print("Laning");
+	--print("Laning");
 	local bot = GetBot();
 	local enemyBot = getEnemyBot();
 	local enemyList = GetUnitList(UNIT_LIST_ENEMY_HEROES);
@@ -223,7 +223,7 @@ function pushUpdateState()
 	end
 end
 function pushThink()
-	print("Pushing");
+	--print("Pushing");
 	local bot = GetBot();
 	local enemyBot= getEnemyBot();
 	local enemyList = GetUnitList(UNIT_LIST_ENEMY_HEROES);
@@ -254,7 +254,7 @@ function defendUpdateState()
 end
 function defendThink()
 
-	print("Defending");
+	--print("Defending");
 	local bot = GetBot();
 	
 	
@@ -322,7 +322,7 @@ function retreatUpdateState()
 	--end
 end
 function retreatThink()
-	print("Retreating");
+	--print("Retreating");
 	local bot = GetBot();
 	
 	-- where bot needs to go
