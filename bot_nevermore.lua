@@ -571,7 +571,9 @@ function retreatUpdateState()
 	end;
 
 	-- Move to Lane State if health becomes larger than certain value
-	if ((not shouldRetreat()) and bot:GetHealth()/bot:GetMaxHealth() > 0.6) then 
+	if ((not shouldRetreat()) and (
+			(bot:GetHealth()/bot:GetMaxHealth() > 0.6) and (GetUnitToLocationDistance(bot, GetLocationAlongLane(LANE_MID, .55)) < 3000) or
+			(bot:GetHealth()/bot:GetMaxHealth() > 0.95)) then
 		print(botTeamName .. " changing state from RETREAT to LANE")
 		currentState = LANE; 
 	end 
@@ -661,7 +663,8 @@ function shouldRetreat()
 	 or bot:WasRecentlyDamagedByAnyHero(1)
 	 or bot:WasRecentlyDamagedByCreep(.75)
 	 or bot:WasRecentlyDamagedByTower(2)
-	 --or (bot:GetHealth() < enemyBot)
+	 or ((bot:GetHealth() < (enemyBot:GetAttackDamage()*3)) and GetUnitToUnitDistance(bot, enemyBot)<900) --3 attacks from death, within 900 range
+	 or ((bot:GetHealth() < (2 * enemyBot:GetAbilityDamage(enemyBot:GetAbilityByName("nevermore_shadowraze2")))) and GetUnitToUnitDistance(bot, enemyBot)<1700) --2 razes from death, within 900 range
       -- or tookToMuchDamange
    )
 end
