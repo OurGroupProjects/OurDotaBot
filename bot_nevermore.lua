@@ -297,5 +297,12 @@ function getEnemyBot()
    end
    return enemyBot
 end
+
+-- Function to determine if the enemy is "gone" (gone is subjective)
+function enemyGone()
+   local bot = GetBot()
+   enemyBot = getEnemyBot()
+   return (GetUnitToUnitDistance(bot, enemyBot) > 2000 or not enemyBot:CanBeSeen())
+end
 ----------------------------------------------------------------------------------------------------
 
