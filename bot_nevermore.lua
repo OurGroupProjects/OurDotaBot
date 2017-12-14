@@ -143,15 +143,9 @@ function laneThink()
 
 	print("Laning");
 	local bot = GetBot();
-	local enemyBot;
+	local enemyBot = getEnemyBot();
 	local enemyList = GetUnitList(UNIT_LIST_ENEMY_HEROES);
 	local listLength = table.getn(enemyList);
-	for i = 1, listLength do
-		--print("Enemy " .. i .. " is " .. enemyList[i]:GetPlayerID());
-		if (enemyList[i]:GetPlayerID() == 4 or enemyList[i]:GetPlayerID() == 9) then
-			enemyBot = enemyList[i];
-		end
-	end
 	
 	local target;
 	if (bot:GetPlayerID() == 4) then
@@ -216,15 +210,9 @@ end
 -- Push
 function pushUpdateState()
 	local bot = GetBot();
-	local enemyBot;
+	local enemyBot = getEnemyBot();
 	local enemyList = GetUnitList(UNIT_LIST_ENEMY_HEROES);
 	local listLength = table.getn(enemyList);
-	for i = 1, listLength do
-		--print("Enemy " .. i .. " is " .. enemyList[i]:GetPlayerID());
-		if (enemyList[i]:GetPlayerID() == 4 or enemyList[i]:GetPlayerID() == 9) then
-			enemyBot = enemyList[i];
-		end
-	end
 	
 	if (bot:GetHealth() < 400) then
 		currentState = RETREAT;
@@ -237,15 +225,9 @@ end
 function pushThink()
 	print("Pushing");
 	local bot = GetBot();
-	local enemyBot;
+	local enemyBot= getEnemyBot();
 	local enemyList = GetUnitList(UNIT_LIST_ENEMY_HEROES);
 	local listLength = table.getn(enemyList);
-	for i = 1, listLength do
-		--print("Enemy " .. i .. " is " .. enemyList[i]:GetPlayerID());
-		if (enemyList[i]:GetPlayerID() == 4 or enemyList[i]:GetPlayerID() == 9) then
-			enemyBot = enemyList[i];
-		end
-	end
 	
 	local target;
 	if (bot:GetPlayerID() == 4) then
@@ -293,22 +275,24 @@ end
 
 -- Attack
 function attackUpdateState()
+   local bot = GetBot();
+   if(bot:GetHealth()/bot:GetMaxHealth() < .2) then  -- or tookToMuchDamange() (way too much)
+      -- print("Attack -> Retreat: Health to low")
+      currentState = RETREAT;
+   elseif((bot:GetHealth() < 500
+	      and GetUnitToUnitDistance(bot, GetTower(getEnemyTeam(), TOWER_MID_1)) < 1050)
+	 or enemyGone()
+   ) then
+      --  or tookToMuchDamange
+      -- print("Attack -> Lane: Tower to dangerous")
+      currentState = LANE;
+   end
 end
+
 function attackThink()
    -- Get current bot and enemy bot
    local bot = GetBot();
-   local enemyBot;
-
-   -- get enemy hero list and loop through looking for the nevermore bots
-   local enemyList = GetUnitList(UNIT_LIST_ENEMY_HEROES);
-   local listLength = table.getn(enemyList);
-   --print("Number of enemies: " .. listLength);
-   for i = 1, listLength do
-      -- print("Enemy " .. i .. " is " .. enemyList[i]:GetPlayerID());
-      if (enemyList[i]:GetPlayerID() == 4 or enemyList[i]:GetPlayerID() == 9) then
-	 enemyBot = enemyList[i];
-      end
-   end
+   local enemyBot = getEnemyBot();
 
    -- Temp to keep it alive
    bot:Action_AttackUnit(enemyBot, false);
@@ -317,6 +301,25 @@ end
 
 -- Retreat
 function retreatUpdateState()
+
+	local bot = GetBot();
+	local targetTower; 
+	
+	if(bot:GetPlayerID() == 9) then
+		targetTower = GetTower(TEAM_DIRE, TOWER_MID_1);
+	elseif(bot:GetPlayerID() == 4) then 
+		targetTower = GetTower(TEAM_RADIANT, TOWER_MID_1);
+	end
+
+	-- Move to Lane State if health becomes larger than certain value
+	if (bot:GetHealth()/bot:GetMaxHealth() > 0.6) then 
+		currentState = LANE; 
+	end 
+	
+	-- Defend the tower if the it is low health and you can afford to risk your life
+	--if (targetTower:GetHealth()/targetTower:GetMaxHealth() <= 0.2) and (bot:GetHealth()/bot:GetMaxHealth() >= 0.75 or GetHeroDeaths(bot:GetPlayerID()) < 1) then 
+		--currentState = DEFEND;
+	--end
 end
 function retreatThink()
 	print("Retreating");
@@ -333,5 +336,37 @@ function retreatThink()
 
 end
 
+-- Other Helper functions
+function getEnemyTeam()
+   local myTeam = GetTeam();
+   local enemyTeam;
+   if(myTeam == TEAM_RADIANT) then
+      enemyTeam = TEAM_DIRE;
+   else
+      enemyTeam = TEAM_RADIANT;
+   end
+   return enemyTeam;
+end
+
+function getEnemyBot()
+   local enemyBot;
+   -- get enemy hero list and loop through looking for the nevermore bots
+   local enemyList = GetUnitList(UNIT_LIST_ENEMY_HEROES);
+   local listLength = table.getn(enemyList);
+   --print("Number of enemies: " .. listLength);
+   for i = 1, listLength do
+      if (enemyList[i]:GetPlayerID() == 4 or enemyList[i]:GetPlayerID() == 9) then
+	 enemyBot = enemyList[i];
+      end
+   end
+   return enemyBot
+end
+
+-- Function to determine if the enemy is "gone" (gone is subjective)
+function enemyGone()
+   local bot = GetBot()
+   enemyBot = getEnemyBot()
+   return (GetUnitToUnitDistance(bot, enemyBot) > 2000 or not enemyBot:CanBeSeen())
+end
 ----------------------------------------------------------------------------------------------------
 
