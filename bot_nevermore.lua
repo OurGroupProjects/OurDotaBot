@@ -134,7 +134,7 @@ function laneUpdateState()
 	elseif (creepsUnderTower) then
 		currentState = DEFEND;
 		print("Changing state from LANE to DEFEND");
-	elseif (enemyBot:GetHealth() < 500) then
+	elseif (shouldRetreat()) then
 		currentState = ATTACK;
 		print("Changing state from LANE to ATTACK");
 	end
@@ -214,7 +214,7 @@ function pushUpdateState()
 	local enemyList = GetUnitList(UNIT_LIST_ENEMY_HEROES);
 	local listLength = table.getn(enemyList);
 	
-	if (bot:GetHealth() < 400) then
+	if (shouldRetreat()) then
 		currentState = RETREAT;
 		print("Changing state from PUSH TO RETREAT")
 	elseif (not enemyGone()) then
@@ -394,6 +394,15 @@ function enemyGone()
    local bot = GetBot()
    enemyBot = getEnemyBot()
    return (GetUnitToUnitDistance(bot, enemyBot) > GONE_DISTANCE_CONSTANT or not enemyBot:CanBeSeen())
+-- Function to decide if the bot should retreat
+function shouldRetreat()
+   local bot = GetBot()
+   return (
+      bot:GetHealth()/bot:GetMaxHealth() < .2
+	 or bot:WasRecentlyDamagedByCreep(5)
+	 or bot:WasRecentlyDamagedByTower(5)
+      -- or tookToMuchDamange
+   )
 end
 ----------------------------------------------------------------------------------------------------
 
