@@ -192,7 +192,7 @@ function laneUpdateState()
 	elseif (creepsUnderTower) then
 	   currentState = DEFEND;
 	   print(botTeamName .. " changing state from LANE to DEFEND");
-	elseif (enemyBot:GetHealth() < 400) then
+	elseif ((enemyBot:GetHealth()/enemyBot:GetMaxHealth() - bot:GetHealth()/bot:GetMaxHealth() > .3) or (bot:GetHealth() - enemyBot:GetHealth() > 400)) then
 		currentState = ATTACK;
 		print(botTeamName .. " changing state from LANE to ATTACK");
 	end
@@ -206,19 +206,28 @@ function laneThink()
 	local listLength = table.getn(enemyList);
 	
 	local target;
+	local targetMeet;
 	if (bot:GetPlayerID() == 4) then
 		target = GetLaneFrontLocation(TEAM_RADIANT, LANE_MID, -300);
+		targetMeet = GetLaneFrontLocation(TEAM_RADIANT, LANE_MID, 50);
 	end
 	if (bot:GetPlayerID() == 9) then
 		target = GetLaneFrontLocation(TEAM_DIRE, LANE_MID, -300);
+		targetMeet = GetLaneFrontLocation(TEAM_DIRE, LANE_MID, 50);
 	end
 	
 	local attackableCreeps = bot:GetNearbyLaneCreeps(800, true);
 	local denyableCreeps = bot:GetNearbyLaneCreeps(800, false);
 	
+	local enemyCreeps = bot:GetNearbyLaneCreeps(1000, true);
+	local enemyHeroesToRaze = bot:GetNearbyHeroes(1000, true, BOT_MODE_NONE);
 	
 	for i=1,#denyableCreeps do
         attackableCreeps[#attackableCreeps+1] = denyableCreeps[i]
+    end
+	
+	for i=1,#enemyHeroesToRaze do
+        enemyCreeps[#enemyCreeps+1] = enemyHeroesToRaze[i]
     end
 
 	local myDamage = bot:GetAttackDamage();
@@ -228,6 +237,7 @@ function laneThink()
 	local earlyHitConstant = 8;
 	
 	local outOfAggroRange = true;
+	
 	
 	--Checks if There are creeps that can be last hit.
 	if (table.getn(attackableCreeps) > 0) then
@@ -254,6 +264,42 @@ function laneThink()
 			
 		end
 	end
+	
+	local raze1 = 0;
+	local raze2 = 0;
+	local raze3 = 0;
+	
+	local razeDamage = (bot:GetAbilityByName("nevermore_shadowraze1")):GetAbilityDamage()
+	print("I think my raze damage is " .. razeDamage);
+	
+	--Checks num of creeps that can be razed by
+	if (table.getn(enemyCreeps) > 0) then
+		for i = 1, table.getn(enemyCreeps) do
+			local creep = enemyCreeps[i];
+			local creepHP = creep:GetHealth();
+			local creepEHP = creepHP;
+			if (creep:WasRecentlyDamagedByCreep(5)) then
+				if (creep:TimeSinceDamagedByCreep() > .6 and creep:TimeSinceDamagedByCreep() < 1) then
+					--print("e");
+					creepEHP = creepEHP - 17;
+				end
+			end
+			if ((razeDamage + earlyHitConstant> creepEHP) or (creep:IsHero())) then
+				if (GetUnitToUnitDistance(bot, creep) < 450) then
+					raze1 = raze1 + 1;
+				end
+				if ((GetUnitToUnitDistance(bot, creep) > 200) and (GetUnitToUnitDistance(bot, creep) < 700)) then
+					raze2 = raze2 + 1;
+				end
+				if ((GetUnitToUnitDistance(bot, creep) > 450) and (GetUnitToUnitDistance(bot, creep) < 950)) then
+					raze3 = raze3 + 1;
+				end
+			end
+			
+		end
+	end
+	
+	
 	local enemyCreeps = bot:GetNearbyLaneCreeps(500, true);
 	if (table.getn(enemyCreeps) > 0) then
 		outOfAggroRange = false;
@@ -264,9 +310,27 @@ function laneThink()
 	elseif (bot:GetTeam() == 3) then
 		botTeamName = "Dire"
 	end;
-
+	
+	local MIN_CREEP_TO_RAZE = 2;
+	
+	print("isfacing is " .. tostring(bot:IsFacingLocation(targetMeet,20)));
+	print("razes are " .. tostring(raze1) .. " " .. tostring(raze2) .. " " .. tostring(raze3));
+	if (bot:IsFacingLocation(targetMeet, 20) and (raze1>MIN_CREEP_TO_RAZE or raze2>MIN_CREEP_TO_RAZE or raze3>MIN_CREEP_TO_RAZE) and (bot:GetMana()/bot:GetMaxMana() > .3)) then
+		if (raze1>MIN_CREEP_TO_RAZE) then
+			shortRazeSkill = bot:GetAbilityByName("nevermore_shadowraze1");
+			bot:Action_UseAbility(shortRazeSkill);
+			print("Razing short");
+		elseif (raze2>MIN_CREEP_TO_RAZE) then 
+			mediumRazeSkill = bot:GetAbilityByName("nevermore_shadowraze2");
+			bot:Action_UseAbility(mediumRazeSkill);
+			print("Razing med");
+		elseif (raze3>MIN_CREEP_TO_RAZE) then 
+			longRazeSkill = bot:GetAbilityByName("nevermore_shadowraze3");
+			bot:Action_UseAbility(longRazeSkill);
+			print("Razing long");
+		end;
 	--If there are creeps to last hit, hit them
-	if (hitsAvailable) then
+	elseif (hitsAvailable) then
 		for i = 1, table.getn(attackableCreeps) do
 			local creep = attackableCreeps[i];
 			local creepHP = creep:GetHealth();
