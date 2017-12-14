@@ -134,6 +134,9 @@ function laneUpdateState()
 	elseif (creepsUnderTower) then
 		currentState = DEFEND;
 		print("Changing state from LANE to DEFEND");
+	elseif (enemyBot:GetHealth() < 500) then
+		currentState = ATTACK;
+		print("Changing state from LANE to ATTACK");
 	end
 end
 function laneThink()
