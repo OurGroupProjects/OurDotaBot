@@ -37,6 +37,7 @@ function updateState()
 
 end
 
+
 function Think()
 	updateState();
 	--print("Applying state " .. currentState);	
@@ -53,6 +54,34 @@ function Think()
 	elseif(currentState == RETREAT) then
 		retreatThink();
 	end
+	
+	
+	local bot = GetBot();
+	local botTeamName = "Glitch";
+	if (bot:GetTeam() == 2) then
+		botTeamName = "Radiant";
+	elseif (bot:GetTeam() == 3) then
+		botTeamName = "Dire"
+	end;
+	
+	local botStateName = "Glitch";
+	if (currentState == 1) then
+		botStateName = "LANE";
+	elseif (currentState == 2) then
+		botStateName = "PUSH"
+	elseif (currentState == 3) then
+		botStateName = "DEFEND"
+	elseif (currentState == 4) then
+		botStateName = "ATTACK"
+	elseif (currentState == 5) then
+		botStateName = "RETREAT"
+	end;
+	
+	--This is for making bugfixing much better
+	if ( GameTime()%10 < 0.05) then
+		print(botTeamName .. " bot state  is " .. botStateName);
+	end;
+		
 	
 	-- Attempting to make enemy bot be normal Dota bot
 	--[[if (bot:GetPlayerID() == 9) then
