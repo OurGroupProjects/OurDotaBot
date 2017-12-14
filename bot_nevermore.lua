@@ -125,18 +125,24 @@ function laneUpdateState()
 		creepsUnderTower = true;
 	end;
 	
+	local botTeamName = "Glitch";
+	if (bot:GetTeam() == 2) then
+		botTeamName = "Radiant";
+	elseif (bot:GetTeam() == 3) then
+		botTeamName = "Dire"
+	end;
 	if (bot:GetHealth() < 400 and not enemyGone()) then
 		currentState = RETREAT;
-		print("Changing state from LANE TO RETREAT")
+		print(botTeamName .. " changing state from LANE TO RETREAT")
 	elseif (enemyGone()) then
 		currentState = PUSH;
-		print("Changing state from LANE TO PUSH")
+		print(botTeamName .. " changing state from LANE TO PUSH")
 	elseif (creepsUnderTower) then
-		currentState = DEFEND;
-		print("Changing state from LANE to DEFEND");
+	   currentState = DEFEND;
+	   print(botTeamName .. " changing state from LANE to DEFEND");
 	elseif (shouldRetreat()) then
 		currentState = ATTACK;
-		print("Changing state from LANE to ATTACK");
+		print(botTeamName .. " changing state from LANE to ATTACK");
 	end
 end
 function laneThink()
@@ -186,9 +192,16 @@ function laneThink()
 		end
 	end
 	
+	local botTeamName = "Glitch";
+	if (bot:GetTeam() == 2) then
+		botTeamName = "Radiant";
+	elseif (bot:GetTeam() == 3) then
+		botTeamName = "Dire"
+	end;
+
 	--If there are creeps to last hit, hit them
 	if (hitsAvailable) then
-		print("Last-hitting a creep");
+		print(botTeamName .. " is trying to last-hit a creep");
 		for i = 1, table.getn(attackableCreeps) do
 			local creep = attackableCreeps[i];
 			local creepHP = creep:GetHealth();
@@ -213,13 +226,20 @@ function pushUpdateState()
 	local enemyBot = getEnemyBot();
 	local enemyList = GetUnitList(UNIT_LIST_ENEMY_HEROES);
 	local listLength = table.getn(enemyList);
-	
+
+	local botTeamName = "Glitch";
+	if (bot:GetTeam() == 2) then
+		botTeamName = "Radiant";
+	elseif (bot:GetTeam() == 3) then
+		botTeamName = "Dire"
+	end;
+
 	if (shouldRetreat()) then
 		currentState = RETREAT;
-		print("Changing state from PUSH TO RETREAT")
+		print(botTeamName .. " changing state from PUSH TO RETREAT")
 	elseif (not enemyGone()) then
 		currentState = LANE;
-		print("Changing state from PUSH TO LANE")
+		print(botTeamName .. " changing state from PUSH TO LANE")
 	end
 end
 function pushThink()
@@ -270,12 +290,19 @@ function defendUpdateState()
 		creepsUnderTower = true;
 	end
 	
+	local botTeamName = "Glitch";
+	if (bot:GetTeam() == 2) then
+		botTeamName = "Radiant";
+	elseif (bot:GetTeam() == 3) then
+		botTeamName = "Dire"
+	end;
+
 	-- if deaths > 0 and health < 50% and tower health > 30% --> retreat 
 	if ((GetHeroDeaths(bot:GetPlayerID()) > 0) and (bot:GetHealth() < (bot:GetMaxHealth()/100)*50) and (targetTower:GetHealth() > (targetTower:GetMaxHealth()/100)*30)) then
-		print("Changing state from DEFEND to RETREAT");
+		print(botTeamName .. " changing state from DEFEND to RETREAT");
 		currentState = RETREAT;
 	elseif (not creepsUnderTower) then -- if there are no enemies under tower --> lane
-		print("Changing state from DEFEND to LANE");
+		print(botTeamName .. " changing state from DEFEND to LANE");
 		currentState = LANE;
 	end
 end
@@ -303,8 +330,17 @@ end
 -- Attack
 function attackUpdateState()
    local bot = GetBot();
+
+   local botTeamName = "Glitch";
+	if (bot:GetTeam() == 2) then
+		botTeamName = "Radiant";
+	elseif (bot:GetTeam() == 3) then
+		botTeamName = "Dire"
+	end;
+
    if(bot:GetHealth()/bot:GetMaxHealth() < .2) then  -- or tookToMuchDamange() (way too much)
       -- print("Attack -> Retreat: Health to low")
+	  print(botTeamName .. " changing state from ATTACK to RETREAT")
       currentState = RETREAT;
    elseif((bot:GetHealth() < 500
 	      and GetUnitToUnitDistance(bot, GetTower(getEnemyTeam(), TOWER_MID_1)) < 1050)
@@ -312,6 +348,7 @@ function attackUpdateState()
    ) then
       --  or tookToMuchDamange
       -- print("Attack -> Lane: Tower to dangerous")
+	  print(botTeamName .. " changing state from ATTACK to LANE")
       currentState = LANE;
    end
 end
@@ -338,8 +375,16 @@ function retreatUpdateState()
 		targetTower = GetTower(TEAM_RADIANT, TOWER_MID_1);
 	end
 
+	local botTeamName = "Glitch";
+	if (bot:GetTeam() == 2) then
+		botTeamName = "Radiant";
+	elseif (bot:GetTeam() == 3) then
+		botTeamName = "Radiant"
+	end;
+
 	-- Move to Lane State if health becomes larger than certain value
 	if (bot:GetHealth()/bot:GetMaxHealth() > 0.6) then 
+		print(botTeamName .. " changing state from RETREAT to LANE")
 		currentState = LANE; 
 	end 
 	
