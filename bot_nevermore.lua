@@ -249,7 +249,18 @@ end
 
 -- Attack
 function attackUpdateState()
+   local bot = GetBot();
+   if(bot:GetHealth()/bot:GetMaxHealth() < .2) then  -- or tookToMuchDamange() (way too much)
+      print("Attack -> Retreat: Health to low")
+      currentState = RETREAT;
+   elseif(bot:GetHealth() < 500
+	  and GetUnitToUnitDistance(bot, GetTower(getEnemyTeam(), TOWER_MID_1)) < 1050) then
+      --  or enemyGone() or tookToMuchDamange
+      print("Attack -> Lane: Tower to dangerous")
+      currentState = LANE;
+   end
 end
+
 function attackThink()
    -- Get current bot and enemy bot
    local bot = GetBot();
@@ -290,5 +301,16 @@ function retreatThink()
 
 end
 
+-- Other Helper functions
+function getEnemyTeam()
+   local myTeam = GetTeam();
+   local enemyTeam;
+   if(myTeam == TEAM_RADIANT) then
+      enemyTeam = TEAM_DIRE;
+   else
+      enemyTeam = TEAM_RADIANT;
+   end
+   return enemyTeam;
+end
 ----------------------------------------------------------------------------------------------------
 
