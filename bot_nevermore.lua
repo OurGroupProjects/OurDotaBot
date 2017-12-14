@@ -135,13 +135,27 @@ function Think()
 		botStateName = "RETREAT"
 	end;
 	
+	
+	
+	local salveSlot = bot:FindItemSlot("item_flask");
+	--print(salveSlot);
+	
+	local salve = bot:GetItemInSlot(salveSlot)
+	--print(salve);
+	
+	
+	if (salveSlot > -1) then
+		bot:Action_UseAbilityOnEntity(salve, bot);
+		print(botTeamName .. " buying salve");
+	end
+	
 	--This is for making bugfixing much better 
 	--[[
 	if ( GameTime()%10 < 0.05) then
 		print(botTeamName .. " bot state  is " .. botStateName);
 	end;
-		
-	
+		--]]
+	--[[
 	if (bot:GetStashValue() > 10) then
 		print("Things in my booty!");
 		local myCourier = GetCourier(bot:GetTeam()-2);
@@ -507,6 +521,7 @@ end
 function retreatThink()
 	--print("Retreating");
 	local bot = GetBot();
+	local enemyBot = getEnemyBot();
 	
 	-- where bot needs to go
 	local target;
@@ -514,8 +529,20 @@ function retreatThink()
 	-- determine where base is 
 	target = GetLocationAlongLane(LANE_MID, .05);
 	
-	-- move to base
-	bot:Action_MoveToLocation(target);
+	local salveSlot = bot:FindItemSlot("item_flask");
+	--print(salveSlot);
+	
+	local salve = bot:GetItemInSlot(salveSlot)
+	--print(salve);
+	
+	
+	if ((salveSlot > -1) and (GetUnitToUnitDistance(bot, enemyBot) > 1500) and (bot:GetMaxHealth() - bot:GetHealth() > 400)) then
+		bot:Action_UseAbilityOnEntity(salve, bot);
+		print("Salving");
+	else
+		-- move to base
+		bot:Action_MoveToLocation(target);
+	end;
 
 end
 
