@@ -538,13 +538,13 @@ function attackThink()
    -- Temp to keep it alive
     if (GetUnitToUnitDistance(bot, enemyBot) < 450 and bot:IsFacingLocation(enemyBot:GetLocation(), 45) and bot:GetAbilityByName("nevermore_shadowraze1"):IsCooldownReady()) then
 		bot:Action_UseAbility(bot:GetAbilityByName("nevermore_shadowraze1"));
-		print("Shortrazing this fucker");
+		--print("Shortrazing this fucker");
 	elseif (GetUnitToUnitDistance(bot, enemyBot) > 200 and GetUnitToUnitDistance(bot, enemyBot) < 700 and bot:IsFacingLocation(enemyBot:GetLocation(), 15) and bot:GetAbilityByName("nevermore_shadowraze1"):IsCooldownReady()) then
 		bot:Action_UseAbility(bot:GetAbilityByName("nevermore_shadowraze2"));
-		print("medrazing this fucker");
+		--print("medrazing this fucker");
 	elseif (GetUnitToUnitDistance(bot, enemyBot) > 450 and GetUnitToUnitDistance(bot, enemyBot) < 950 and bot:IsFacingLocation(enemyBot:GetLocation(), 10) and bot:GetAbilityByName("nevermore_shadowraze1"):IsCooldownReady()) then
 		bot:Action_UseAbility(bot:GetAbilityByName("nevermore_shadowraze3"));
-		print("longrazing this fucker");
+		--print("longrazing this fucker");
 	else
 		bot:Action_AttackUnit(enemyBot, false);
 	end;
