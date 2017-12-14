@@ -13,4 +13,4 @@ This is our Dota 2 bot script.
 
 # How to run the bot?
  Place all the root files and directories in a new folder named "bots" located in steamapps/common/dota 2 beta/game/dota/scripts/vscripts
- Launch dota, and create a lobby. Host the lobby on localhost, and turn on "Fill empty slots with bots". Select "local dev script" in the dropdown, the difficulty doesn't matter. Move yourself into a coach slot, and start the game. If you wish to observe both team' bots, use to console to set "sv_cheats 1", and then "-allvision" in chat.
+ Launch dota, and create a lobby. Set the game mode to 1v1 mid, host the lobby on localhost, and turn on "Fill empty slots with bots". Select "local dev script" in the dropdown, the difficulty doesn't matter. Move yourself into a coach slot, and start the game. If you wish to observe both team' bots, use to console to set "sv_cheats 1", and then "-allvision" in chat.
