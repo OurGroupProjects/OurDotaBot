@@ -167,9 +167,9 @@ function laneUpdateState()
 		currentState = PUSH;
 		print(botTeamName .. " changing state from LANE TO PUSH")
 	elseif (creepsUnderTower) then
-		currentState = DEFEND;
-		print(botTeamName .. " changing state from LANE to DEFEND");
-	elseif (enemyBot:GetHealth() < 500) then
+	   currentState = DEFEND;
+	   print(botTeamName .. " changing state from LANE to DEFEND");
+	elseif (shouldRetreat()) then
 		currentState = ATTACK;
 		print(botTeamName .. " changing state from LANE to ATTACK");
 	end
@@ -227,7 +227,7 @@ function laneThink()
 	elseif (bot:GetTeam() == 3) then
 		botTeamName = "Dire"
 	end;
-	
+
 	--If there are creeps to last hit, hit them
 	if (hitsAvailable) then
 		print(botTeamName .. " is trying to last-hit a creep");
@@ -255,15 +255,15 @@ function pushUpdateState()
 	local enemyBot = getEnemyBot();
 	local enemyList = GetUnitList(UNIT_LIST_ENEMY_HEROES);
 	local listLength = table.getn(enemyList);
-	
+
 	local botTeamName = "Glitch";
 	if (bot:GetTeam() == 2) then
 		botTeamName = "Radiant";
 	elseif (bot:GetTeam() == 3) then
 		botTeamName = "Dire"
 	end;
-	
-	if (bot:GetHealth() < 400) then
+
+	if (shouldRetreat()) then
 		currentState = RETREAT;
 		print(botTeamName .. " changing state from PUSH TO RETREAT")
 	elseif (not enemyGone()) then
@@ -325,7 +325,7 @@ function defendUpdateState()
 	elseif (bot:GetTeam() == 3) then
 		botTeamName = "Dire"
 	end;
-	
+
 	-- if deaths > 0 and health < 50% and tower health > 30% --> retreat 
 	if ((GetHeroDeaths(bot:GetPlayerID()) > 0) and (bot:GetHealth() < (bot:GetMaxHealth()/100)*50) and (targetTower:GetHealth() > (targetTower:GetMaxHealth()/100)*30)) then
 		print(botTeamName .. " changing state from DEFEND to RETREAT");
@@ -359,14 +359,14 @@ end
 -- Attack
 function attackUpdateState()
    local bot = GetBot();
-   
+
    local botTeamName = "Glitch";
 	if (bot:GetTeam() == 2) then
 		botTeamName = "Radiant";
 	elseif (bot:GetTeam() == 3) then
 		botTeamName = "Dire"
 	end;
-   
+
    if(bot:GetHealth()/bot:GetMaxHealth() < .2) then  -- or tookToMuchDamange() (way too much)
       -- print("Attack -> Retreat: Health to low")
 	  print(botTeamName .. " changing state from ATTACK to RETREAT")
@@ -403,7 +403,7 @@ function retreatUpdateState()
 	elseif(bot:GetPlayerID() == 4) then 
 		targetTower = GetTower(TEAM_RADIANT, TOWER_MID_1);
 	end
-	
+
 	local botTeamName = "Glitch";
 	if (bot:GetTeam() == 2) then
 		botTeamName = "Radiant";
@@ -467,7 +467,18 @@ end
 function enemyGone()
    local bot = GetBot()
    enemyBot = getEnemyBot()
-   return (GetUnitToUnitDistance(bot, enemyBot) > GONE_DISTANCE_CONSTANT or not enemyBot:CanBeSeen())
+   return (enemyBot == nil or GetUnitToUnitDistance(bot, enemyBot) > GONE_DISTANCE_CONSTANT)
+end
+
+-- Function to decide if the bot should retreat
+function shouldRetreat()
+   local bot = GetBot()
+   return (
+      bot:GetHealth()/bot:GetMaxHealth() < .2
+	 or bot:WasRecentlyDamagedByCreep(5)
+	 or bot:WasRecentlyDamagedByTower(5)
+      -- or tookToMuchDamange
+   )
 end
 ----------------------------------------------------------------------------------------------------
 
