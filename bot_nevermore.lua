@@ -257,6 +257,25 @@ end
 
 -- Retreat
 function retreatUpdateState()
+
+	local bot = GetBot();
+	local targetTower; 
+	
+	if(bot:GetPlayerID() == 9) then
+		targetTower = GetTower(TEAM_DIRE, TOWER_MID_1);
+	elseif(bot:GetPlayerID() == 4) then 
+		targetTower = GetTower(TEAM_RADIANT, TOWER_MID_1);
+	end
+
+	-- Move to Lane State if health becomes larger than certain value
+	if (bot:GetHealth()/bot:GetMaxHealth() > 0.6) then 
+		currentState = LANE; 
+	end 
+	
+	-- Defend the tower if the it is low health and you can afford to risk your life
+	--if (targetTower:GetHealth()/targetTower:GetMaxHealth() <= 0.2) and (bot:GetHealth()/bot:GetMaxHealth() >= 0.75 or GetHeroDeaths(bot:GetPlayerID()) < 1) then 
+		--currentState = DEFEND;
+	--end
 end
 function retreatThink()
 
