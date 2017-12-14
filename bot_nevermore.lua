@@ -125,7 +125,7 @@ function laneUpdateState()
 		creepsUnderTower = true;
 	end;
 	
-	if (bot:GetHealth() < 400) then
+	if (bot:GetHealth() < 400 and not enemyGone()) then
 		currentState = RETREAT;
 		print("Changing state from LANE TO RETREAT")
 	elseif (enemyGone()) then
