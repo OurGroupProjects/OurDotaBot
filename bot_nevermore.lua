@@ -290,5 +290,16 @@ function retreatThink()
 
 end
 
+-- Other Helper functions
+function getEnemyTeam()
+   local myTeam = GetTeam();
+   local enemyTeam;
+   if(myTeam == TEAM_RADIANT) then
+      enemyTeam = TEAM_DIRE;
+   else
+      enemyTeam = TEAM_RADIANT;
+   end
+   return enemyTeam;
+end
 ----------------------------------------------------------------------------------------------------
 
