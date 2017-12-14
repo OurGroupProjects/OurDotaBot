@@ -536,7 +536,15 @@ function attackThink()
    local enemyBot = getEnemyBot();
 
    -- Temp to keep it alive
-   bot:Action_AttackUnit(enemyBot, false);
+    if (GetUnitToUnitDistance(bot, enemyBot) < 450 and bot:IsFacingLocation(enemyBot:GetLocation(), 45)) then
+		bot:Action_UseAbility(bot:GetAbilityByName("nevermore_shadowraze1")));
+	elseif (GetUnitToUnitDistance(bot, enemyBot) > 200 and GetUnitToUnitDistance(bot, enemyBot) < 700 and bot:IsFacingLocation(enemyBot:GetLocation(), 15)) then
+		bot:Action_UseAbility(bot:GetAbilityByName("nevermore_shadowraze2")));
+	elseif (GetUnitToUnitDistance(bot, enemyBot) > 450 and GetUnitToUnitDistance(bot, enemyBot) < 950 and bot:IsFacingLocation(enemyBot:GetLocation(), 10)) then
+		bot:Action_UseAbility(bot:GetAbilityByName("nevermore_shadowraze3")));
+	else
+		bot:Action_AttackUnit(enemyBot, false);\
+	end;
 
 end
 
