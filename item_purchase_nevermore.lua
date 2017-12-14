@@ -51,14 +51,19 @@ function ItemPurchaseThink()
 	
 	if ((npcBot:GetMaxHealth() - npcBot:GetHealth() > 400) and (npcBot:GetGold() >= GetItemCost("item_salve"))) then
 		npcBot:ActionImmediate_PurchaseItem("item_salve");
-		--print("Bot on team " .. botTeamName .. " summoning courier number ");
-		npcBot:ActionImmediate_Courier(myCourier, COURIER_ACTION_TAKE_AND_TRANSFER_ITEMS);
-	elseif ( npcBot:GetGold() >= GetItemCost( sNextItem ) )
-	then
+		print(botTeamName .. " buying salve");
+		if (npcBot:GetStashValue() + npcBot:GetCourierValue() > 0) then
+			print(botTeamName .. " having salve delivered");
+			npcBot:ActionImmediate_Courier(myCourier, COURIER_ACTION_TAKE_AND_TRANSFER_ITEMS);
+		end;
+	elseif ( npcBot:GetGold() >= GetItemCost( sNextItem ) ) then
+		print(botTeamName .. " buying next item");
 		npcBot:ActionImmediate_PurchaseItem( sNextItem );
 		table.remove( tableItemsToBuy, 1 );
-		--print("Bot on team " .. botTeamName .. " summoning courier number ");
-		npcBot:ActionImmediate_Courier(myCourier, COURIER_ACTION_TAKE_AND_TRANSFER_ITEMS);
+		if (npcBot:GetStashValue() + npcBot:GetCourierValue() > 0) then
+			print(botTeamName .. " having item delivered");
+			npcBot:ActionImmediate_Courier(myCourier, COURIER_ACTION_TAKE_AND_TRANSFER_ITEMS);
+		end;
 	end
 
 end

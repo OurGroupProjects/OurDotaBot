@@ -137,18 +137,6 @@ function Think()
 	
 	
 	
-	local salveSlot = bot:FindItemSlot("item_flask");
-	--print(salveSlot);
-	
-	local salve = bot:GetItemInSlot(salveSlot)
-	--print(salve);
-	
-	
-	if (salveSlot > -1) then
-		bot:Action_UseAbilityOnEntity(salve, bot);
-		print(botTeamName .. " buying salve");
-	end
-	
 	--This is for making bugfixing much better 
 	--[[
 	if ( GameTime()%10 < 0.05) then
