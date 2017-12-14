@@ -160,12 +160,12 @@ function laneUpdateState()
 	
 	local tower;
 	local creepsLoc;
-	if (bot:GetPlayerID() == 4) then
+	if (bot:GetTeam() == 2) then
 		--print("A");
 		tower = GetTower(TEAM_RADIANT,TOWER_MID_1)
 		creepsLoc = GetLaneFrontLocation(TEAM_RADIANT, LANE_MID, 0);
 	end
-	if (bot:GetPlayerID() == 9) then
+	if (bot:GetTeam() == 3) then
 		--print("B");
 		tower = GetTower(TEAM_DIRE,TOWER_MID_1);
 		creepsLoc = GetLaneFrontLocation(TEAM_DIRE, LANE_MID, 0);
@@ -207,11 +207,11 @@ function laneThink()
 	
 	local target;
 	local targetMeet;
-	if (bot:GetPlayerID() == 4) then
+	if (bot:GetTeam() == 2) then
 		target = GetLaneFrontLocation(TEAM_RADIANT, LANE_MID, -300);
 		targetMeet = GetLaneFrontLocation(TEAM_RADIANT, LANE_MID, 50);
 	end
-	if (bot:GetPlayerID() == 9) then
+	if (bot:GetTeam() == 3) then
 		target = GetLaneFrontLocation(TEAM_DIRE, LANE_MID, -300);
 		targetMeet = GetLaneFrontLocation(TEAM_DIRE, LANE_MID, 50);
 	end
@@ -315,16 +315,16 @@ function laneThink()
 	
 	print("isfacing is " .. tostring(bot:IsFacingLocation(targetMeet,20)));
 	print("razes are " .. tostring(raze1) .. " " .. tostring(raze2) .. " " .. tostring(raze3));
-	if (bot:IsFacingLocation(targetMeet, 20) and (raze1>MIN_CREEP_TO_RAZE or raze2>MIN_CREEP_TO_RAZE or raze3>MIN_CREEP_TO_RAZE) and (bot:GetMana()/bot:GetMaxMana() > .3)) then
-		if (raze1>MIN_CREEP_TO_RAZE) then
+	if (bot:IsFacingLocation(targetMeet, 20) and (raze1>=MIN_CREEP_TO_RAZE or raze2>=MIN_CREEP_TO_RAZE or raze3>=MIN_CREEP_TO_RAZE) and (bot:GetMana()/bot:GetMaxMana() > .3)) then
+		if (raze1>=MIN_CREEP_TO_RAZE) then
 			shortRazeSkill = bot:GetAbilityByName("nevermore_shadowraze1");
 			bot:Action_UseAbility(shortRazeSkill);
 			print("Razing short");
-		elseif (raze2>MIN_CREEP_TO_RAZE) then 
+		elseif (raze2>=MIN_CREEP_TO_RAZE) then 
 			mediumRazeSkill = bot:GetAbilityByName("nevermore_shadowraze2");
 			bot:Action_UseAbility(mediumRazeSkill);
 			print("Razing med");
-		elseif (raze3>MIN_CREEP_TO_RAZE) then 
+		elseif (raze3>=MIN_CREEP_TO_RAZE) then 
 			longRazeSkill = bot:GetAbilityByName("nevermore_shadowraze3");
 			bot:Action_UseAbility(longRazeSkill);
 			print("Razing long");
@@ -388,10 +388,10 @@ function pushThink()
 	local listLength = table.getn(enemyList);
 	
 	local target;
-	if (bot:GetPlayerID() == 4) then
+	if (bot:GetTeam() == 2) then
 		target = GetLaneFrontLocation(TEAM_RADIANT, LANE_MID, -200);
 	end
-	if (bot:GetPlayerID() == 9) then
+	if (bot:GetTeam() == 3) then
 		target = GetLaneFrontLocation(TEAM_DIRE, LANE_MID, -200);
 	end
 	
@@ -400,10 +400,10 @@ function pushThink()
 	local nearbyCreeps = bot:GetNearbyLaneCreeps(700, true);
 	
 	local tower;
-	if (bot:GetPlayerID() == 9) then
+	if (bot:GetTeam() == 3) then
 		tower = GetTower(TEAM_RADIANT,TOWER_MID_1)
 	end
-	if (bot:GetPlayerID() == 4) then
+	if (bot:GetTeam() == 2) then
 		tower = GetTower(TEAM_DIRE,TOWER_MID_1);
 	end
 	
@@ -427,10 +427,10 @@ function defendUpdateState()
 	local creepsLocation;
 
 	-- get the allied tower and the location for creeps
-	if (bot:GetPlayerID() == 9) then -- bot is Dire
+	if (bot:GetTeam() == 3) then -- bot is Dire
 		targetTower = GetTower(TEAM_DIRE, TOWER_MID_1);
 		creepsLocation = GetLaneFrontLocation(TEAM_DIRE, LANE_MID, 0);
-	elseif (bot:GetPlayerID() == 4) then -- bot is Radiant
+	elseif (bot:GetTeam() == 2) then -- bot is Radiant
 		targetTower = GetTower(TEAM_RADIANT, TOWER_MID_1);
 		creepsLocation = GetLaneFrontLocation(TEAM_RADIANT, LANE_MID, 0);
 	end
@@ -465,10 +465,10 @@ function defendThink()
 	
 	
 	local target;
-	if (bot:GetPlayerID() == 4) then
+	if (bot:GetTeam() == 2) then
 		target = GetLaneFrontLocation(TEAM_RADIANT, LANE_MID, -200);
 	end
-	if (bot:GetPlayerID() == 9) then
+	if (bot:GetTeam() == 3) then
 		target = GetLaneFrontLocation(TEAM_DIRE, LANE_MID, -200);
 	end
 	
@@ -495,7 +495,7 @@ function defendThink()
 	-- determine where mid tower is 
 	if (bot:GetPlayerID() == 9) then -- bot is Dire
 		target = GetLocationAlongLane(LANE_MID, 0.51);
-	elseif (bot:GetPlayerID() == 4) then -- bot is Radiant
+	elseif (bot:GetTeam() == 2) then -- bot is Radiant
 		target = GetLocationAlongLane(LANE_MID, 0.45);
 	end
 	
@@ -546,9 +546,9 @@ function retreatUpdateState()
 	local bot = GetBot();
 	local targetTower; 
 	
-	if(bot:GetPlayerID() == 9) then
+	if(bot:GetTeam() == 3) then
 		targetTower = GetTower(TEAM_DIRE, TOWER_MID_1);
-	elseif(bot:GetPlayerID() == 4) then 
+	elseif(bot:GetTeam() == 2) then 
 		targetTower = GetTower(TEAM_RADIANT, TOWER_MID_1);
 	end
 
@@ -617,9 +617,10 @@ function getEnemyBot()
    local listLength = table.getn(enemyList);
    --print("Number of enemies: " .. listLength);
    for i = 1, listLength do
-      if (enemyList[i]:GetPlayerID() == 4 or enemyList[i]:GetPlayerID() == 9) then
-	 enemyBot = enemyList[i];
-      end
+		--print(GetSelectedHeroName(enemyList[i]:GetPlayerID()));
+		if (GetSelectedHeroName(enemyList[i]:GetPlayerID()) == "npc_dota_hero_nevermore") then
+			enemyBot = enemyList[i];
+		end
    end
    return enemyBot
 end
