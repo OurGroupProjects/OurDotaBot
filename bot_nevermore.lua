@@ -217,7 +217,7 @@ function pushUpdateState()
 	if (bot:GetHealth() < 400) then
 		currentState = RETREAT;
 		print("Changing state from PUSH TO RETREAT")
-	elseif (enemyGone()) then
+	elseif (not enemyGone()) then
 		currentState = LANE;
 		print("Changing state from PUSH TO LANE")
 	end
