@@ -1,5 +1,7 @@
 
 
+local GONE_DISTANCE_CONSTANT = 2000;
+
 --State machine shit
 
 --Constants for states
@@ -10,7 +12,7 @@ local ATTACK = 4; -- Attacking involves hitting and chasing an enemy hero, this 
 local RETREAT = 5; -- Retreating involves running back to base (or shrine?) to heal, this happens when the hero's health is low
 
 -- Holds the initial state
-local initialState = PUSH;
+local initialState = LANE;
 
 -- Holds the current state
 local currentState = initialState;
@@ -94,10 +96,49 @@ end
 -- State Machine Funtions
 -- Lane
 function laneUpdateState()
+	local bot = GetBot();
+	local enemyBot;
+	local enemyList = GetUnitList(UNIT_LIST_ENEMY_HEROES);
+	local listLength = table.getn(enemyList);
+	for i = 1, listLength do
+		--print("Enemy " .. i .. " is " .. enemyList[i]:GetPlayerID());
+		if (enemyList[i]:GetPlayerID() == 4 or enemyList[i]:GetPlayerID() == 9) then
+			enemyBot = enemyList[i];
+		end
+	end
+	
+	local tower;
+	local creepsLoc;
+	if (bot:GetPlayerID() == 4) then
+		--print("A");
+		tower = GetTower(TEAM_RADIANT,TOWER_MID_1)
+		creepsLoc = GetLaneFrontLocation(TEAM_RADIANT, LANE_MID, 0);
+	end
+	if (bot:GetPlayerID() == 9) then
+		--print("B");
+		tower = GetTower(TEAM_DIRE,TOWER_MID_1);
+		creepsLoc = GetLaneFrontLocation(TEAM_DIRE, LANE_MID, 0);
+	end
+
+	local creepsUnderTower = false;
+	if (GetUnitToLocationDistance(tower, creepsLoc) < 900) then
+		creepsUnderTower = true;
+	end;
+	
+	if (bot:GetHealth() < 400) then
+		currentState = RETREAT;
+		print("Changing state from LANE TO RETREAT")
+	elseif (GetUnitToUnitDistance(bot, enemyBot) > GONE_DISTANCE_CONSTANT) then
+		currentState = PUSH;
+		print("Changing state from LANE TO PUSH")
+	elseif (creepsUnderTower) then
+		currentState = DEFEND;
+		print("Changing state from LANE to DEFEND");
+	end
 end
 function laneThink()
 
-	--print("Thinkin to lane");
+	print("Laning");
 	local bot = GetBot();
 	local enemyBot;
 	local enemyList = GetUnitList(UNIT_LIST_ENEMY_HEROES);
@@ -150,7 +191,7 @@ function laneThink()
 	
 	--If there are creeps to last hit, hit them
 	if (hitsAvailable) then
-
+		print("Last-hitting a creep");
 		for i = 1, table.getn(attackableCreeps) do
 			local creep = attackableCreeps[i];
 			local creepHP = creep:GetHealth();
@@ -185,13 +226,13 @@ function pushUpdateState()
 	if (bot:GetHealth() < 400) then
 		currentState = RETREAT;
 		print("Changing state from PUSH TO RETREAT")
-	elseif (GetUnitToUnitDistance(bot, enemyBot) < 500) then
+	elseif (GetUnitToUnitDistance(bot, enemyBot) < GONE_DISTANCE_CONSTANT) then
 		currentState = LANE;
 		print("Changing state from PUSH TO LANE")
 	end
 end
 function pushThink()
-	--print("Thinkin to push");
+	print("Pushing");
 	local bot = GetBot();
 	local enemyBot;
 	local enemyList = GetUnitList(UNIT_LIST_ENEMY_HEROES);
@@ -228,7 +269,7 @@ function defendUpdateState()
 end
 function defendThink()
 
-	print("in defendThink");
+	print("Defending");
 	local bot = GetBot();
 	
 	
@@ -275,8 +316,7 @@ end
 function retreatUpdateState()
 end
 function retreatThink()
-
-	print("in retreatThink");
+	print("Retreating");
 	local bot = GetBot();
 	
 	-- where bot needs to go
