@@ -1,5 +1,9 @@
 
 
+
+
+
+
 local GONE_DISTANCE_CONSTANT = 2000;
 
 --State machine shit
@@ -16,6 +20,57 @@ local initialState = LANE;
 
 -- Holds the current state
 local currentState = initialState;
+
+local SKILL_1 = 'nevermore_shadowraze1';
+local SKILL_1_1 = 'nevermore_shadowraze2';
+local SKILL_1_2 = 'nevermore_shadowraze3';
+local SKILL_2 = 'nevermore_necromastery';
+local SKILL_3 = 'nevermore_dark_lord';
+local SKILL_ULTI = 'nevermore_requiem';
+
+local SKILL_BUILD = {
+    SKILL_2, -- 1
+    SKILL_1, -- 2
+    SKILL_2, -- 3
+    SKILL_1, -- 4
+    SKILL_2, -- 5
+    SKILL_1, -- 6
+    SKILL_2, -- 7
+    SKILL_1, -- 8
+    SKILL_3, -- 9
+    -- 'special_bonus_attack_speed_20', -- 10
+    SKILL_ULTI, -- 11
+    SKILL_ULTI, -- 12
+    SKILL_3, -- 13
+    SKILL_3, -- 14
+    -- 'special_bonus_spell_amplify_6', -- 15
+    SKILL_3, -- 16
+    SKILL_ULTI, -- 18
+    -- 'special_bonus_unique_nevermore_1', -- 20
+    -- 'special_bonus_attack_range_150', -- 25
+}
+
+local TOTAL_SKILL_LEVEL = 0
+
+function LevelUp()
+    local bot = GetBot();
+
+    if(#SKILL_BUILD == 0) then
+        return
+    end
+
+    local skill = bot:GetAbilityByName(SKILL_BUILD[1])
+    local skill_level = skill:GetLevel()
+
+    if(skill:CanAbilityBeUpgraded()) then
+        bot:ActionImmediate_LevelAbility(SKILL_BUILD[1])
+        local skill_level_after_upgrade = skill:GetLevel()
+
+        if(skill_level_after_upgrade > skill_level) then
+            table.remove(SKILL_BUILD, 1);
+        end
+    end
+end
 
 -- Check and apply transitions, updating currentState
 function updateState()
@@ -39,6 +94,9 @@ end
 
 
 function Think()
+
+	LevelUp();
+
 	updateState();
 	--print("Applying state " .. currentState);	
 	--currentState = DEFEND;
@@ -59,7 +117,7 @@ function Think()
 	local bot = GetBot();
 	local botTeamName = "Glitch";
 	if (bot:GetTeam() == 2) then
-		botTeamName = "Radiant";
+		botTeamName = "Radi";
 	elseif (bot:GetTeam() == 3) then
 		botTeamName = "Dire"
 	end;
@@ -78,47 +136,16 @@ function Think()
 	end;
 	
 	--This is for making bugfixing much better
-	if ( GameTime()%10 < 0.05) then
-		print(botTeamName .. " bot state  is " .. botStateName);
-	end;
+	--if ( GameTime()%10 < 0.05) then
+	--	print(botTeamName .. " bot state  is " .. botStateName);
+	--end;
 		
 	
-	-- Attempting to make enemy bot be normal Dota bot
-	--[[if (bot:GetPlayerID() == 9) then
-		nevermoreBot:Think(bot);
-		do return end
-	end
-
-	print("Dota bot Nevermore at time: " .. DotaTime());
-	print("Game time (Nevermore): " .. GameTime());
-	print("Game State: " .. GetGameState());
-	print("Game Mode: " .. GetGameMode());
-	
-	-- Getting current bot and the enemy bot
-	local bot = GetBot();
-	local enemyBot;
-	
-	print("My current level is " .. GetHeroLevel(bot:GetPlayerID()));
-	
-	-- get enemy hero list and loop through looking for the nevermore bots 
-	local enemyList = GetUnitList(UNIT_LIST_ENEMY_HEROES);
-	local listLength = table.getn(enemyList);
-	--print("Number of enemies: " .. listLength);
-	for i = 1, listLength do
-		print("Enemy " .. i .. " is " .. enemyList[i]:GetPlayerID());
-		if (enemyList[i]:GetPlayerID() == 4 or enemyList[i]:GetPlayerID() == 9) then
-			enemyBot = enemyList[i];
-		end
-	end
-	
-	--print("Enemy bot of " .. bot:GetPlayerID() .. " is " .. enemyBot:GetPlayerID());
-	
-	-- move to the center of mid and attack any enemy in range
-	local target = GetLocationAlongLane(LANE_MID, 0.52);
-    --bot:Action_MoveToLocation(target);
-	bot:Action_AttackMove(target);
-	
-    --nevermoreBot:Think(bot)--]]
+	--if (bot:GetStashValue() > 10) then
+		--print("Things in my booty!");
+		--local myCourier = GetCourier(bot:GetTeam()-2);
+		--bot:ActionImmediate_Courier(myCourier, COURIER_ACTION_TAKE_AND_TRANSFER_ITEMS);
+	--end;
 	
 end
 
@@ -156,11 +183,11 @@ function laneUpdateState()
 	
 	local botTeamName = "Glitch";
 	if (bot:GetTeam() == 2) then
-		botTeamName = "Radiant";
+		botTeamName = "Radi";
 	elseif (bot:GetTeam() == 3) then
 		botTeamName = "Dire"
 	end;
-	if (bot:GetHealth() < 400 and not enemyGone()) then
+	if (shouldRetreat()) then
 		currentState = RETREAT;
 		print(botTeamName .. " changing state from LANE TO RETREAT")
 	elseif (enemyGone()) then
@@ -169,7 +196,7 @@ function laneUpdateState()
 	elseif (creepsUnderTower) then
 	   currentState = DEFEND;
 	   print(botTeamName .. " changing state from LANE to DEFEND");
-	elseif (shouldRetreat()) then
+	elseif (enemyBot:GetHealth() < 400) then
 		currentState = ATTACK;
 		print(botTeamName .. " changing state from LANE to ATTACK");
 	end
@@ -202,6 +229,8 @@ function laneThink()
 	
 	local hitsAvailable = false;
 	
+	local earlyHitConstant = 7;
+	
 	--Checks if There are creeps that can be last hit.
 	if (table.getn(attackableCreeps) > 0) then
 		for i = 1, table.getn(attackableCreeps) do
@@ -214,8 +243,14 @@ function laneThink()
 					creepEHP = creepEHP - 17;
 				end
 			end
-
-			if (myDamage > creepEHP) then
+			
+			local rangedCreepBonus = 0;
+			
+			if (creep:GetAttackRange() > 200) then
+				rangedCreepBonus = 40;
+			end;
+			
+			if (myDamage + earlyHitConstant + rangedCreepBonus > creepEHP) then
 				hitsAvailable = true;
 			end
 		end
@@ -223,7 +258,7 @@ function laneThink()
 	
 	local botTeamName = "Glitch";
 	if (bot:GetTeam() == 2) then
-		botTeamName = "Radiant";
+		botTeamName = "Radi";
 	elseif (bot:GetTeam() == 3) then
 		botTeamName = "Dire"
 	end;
@@ -240,8 +275,16 @@ function laneThink()
 					creepEHP = creepEHP - 17; --17 is aprox dmg of a creep melee
 				end
 			end
-			if (myDamage > creepEHP) then
+			
+			local rangedCreepBonus = 0;
+			
+			if (creep:GetAttackRange() > 200) then
+				rangedCreepBonus = 40;
+			end;
+			
+			if (myDamage + earlyHitConstant + rangedCreepBonus > creepEHP) then
 				bot:Action_AttackUnit(attackableCreeps[i], true);
+				break;
 			end
 		end
 	else  -- Othwerwise, be a bit behind the creep wave
@@ -258,7 +301,7 @@ function pushUpdateState()
 
 	local botTeamName = "Glitch";
 	if (bot:GetTeam() == 2) then
-		botTeamName = "Radiant";
+		botTeamName = "Radi";
 	elseif (bot:GetTeam() == 3) then
 		botTeamName = "Dire"
 	end;
@@ -321,7 +364,7 @@ function defendUpdateState()
 	
 	local botTeamName = "Glitch";
 	if (bot:GetTeam() == 2) then
-		botTeamName = "Radiant";
+		botTeamName = "Radi";
 	elseif (bot:GetTeam() == 3) then
 		botTeamName = "Dire"
 	end;
@@ -341,9 +384,35 @@ function defendThink()
 	--print("Defending");
 	local bot = GetBot();
 	
+	
+	local target;
+	if (bot:GetPlayerID() == 4) then
+		target = GetLaneFrontLocation(TEAM_RADIANT, LANE_MID, -200);
+	end
+	if (bot:GetPlayerID() == 9) then
+		target = GetLaneFrontLocation(TEAM_DIRE, LANE_MID, -200);
+	end
+	
+	local friendlyCreeps = bot:GetNearbyLaneCreeps(700, false);
+	local attackableCreeps = bot:GetNearbyLaneCreeps(500, true);
+	
+	--Later, maybe make this prioritize low creeps, so it can get lh while pushing
+	if (table.getn(friendlyCreeps) > 0) then
+		--print("See attackable creep");
+		if (table.getn(attackableCreeps) > 0) then
+			bot:Action_AttackUnit(attackableCreeps[1], true);
+		else
+			bot:Action_MoveToLocation(target);
+		end
+	else 
+		bot:Action_MoveToLocation(target);
+	end
+	
+	--[[
 	-- where bot needs to go
 	local target;
 	
+
 	-- determine where mid tower is 
 	if (bot:GetPlayerID() == 9) then -- bot is Dire
 		target = GetLocationAlongLane(LANE_MID, 0.51);
@@ -352,7 +421,7 @@ function defendThink()
 	end
 	
 	-- attack anything that is near the tower
-	bot:Action_AttackMove(target);
+	bot:Action_AttackMove(target); --]]
 
 end
 
@@ -362,7 +431,7 @@ function attackUpdateState()
 
    local botTeamName = "Glitch";
 	if (bot:GetTeam() == 2) then
-		botTeamName = "Radiant";
+		botTeamName = "Radi";
 	elseif (bot:GetTeam() == 3) then
 		botTeamName = "Dire"
 	end;
@@ -406,13 +475,13 @@ function retreatUpdateState()
 
 	local botTeamName = "Glitch";
 	if (bot:GetTeam() == 2) then
-		botTeamName = "Radiant";
+		botTeamName = "Radi";
 	elseif (bot:GetTeam() == 3) then
-		botTeamName = "Radiant"
+		botTeamName = "Dire"
 	end;
 
 	-- Move to Lane State if health becomes larger than certain value
-	if (bot:GetHealth()/bot:GetMaxHealth() > 0.6) then 
+	if ((not shouldRetreat()) and bot:GetHealth()/bot:GetMaxHealth() > 0.6) then 
 		print(botTeamName .. " changing state from RETREAT to LANE")
 		currentState = LANE; 
 	end 
@@ -467,7 +536,16 @@ end
 function enemyGone()
    local bot = GetBot()
    enemyBot = getEnemyBot()
-   return (enemyBot == nil or GetUnitToUnitDistance(bot, enemyBot) > GONE_DISTANCE_CONSTANT)
+   
+   	local target;
+	if (bot:GetPlayerID() == 4) then
+		target = GetLaneFrontLocation(TEAM_RADIANT, LANE_MID, -200);
+	end
+	if (bot:GetPlayerID() == 9) then
+		target = GetLaneFrontLocation(TEAM_DIRE, LANE_MID, -200);
+	end
+   
+   return (enemyBot == nil or GetUnitToLocationDistance(enemyBot, target) > GONE_DISTANCE_CONSTANT)
 end
 
 -- Function to decide if the bot should retreat
@@ -475,8 +553,8 @@ function shouldRetreat()
    local bot = GetBot()
    return (
       bot:GetHealth()/bot:GetMaxHealth() < .2
-	 or bot:WasRecentlyDamagedByCreep(5)
-	 or bot:WasRecentlyDamagedByTower(5)
+	 or bot:WasRecentlyDamagedByCreep(1)
+	 or bot:WasRecentlyDamagedByTower(3)
       -- or tookToMuchDamange
    )
 end
