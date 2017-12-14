@@ -99,15 +99,9 @@ function laneThink()
 
 	--print("Thinkin to lane");
 	local bot = GetBot();
-	local enemyBot;
+	local enemyBot = getEnemyBot();
 	local enemyList = GetUnitList(UNIT_LIST_ENEMY_HEROES);
 	local listLength = table.getn(enemyList);
-	for i = 1, listLength do
-		--print("Enemy " .. i .. " is " .. enemyList[i]:GetPlayerID());
-		if (enemyList[i]:GetPlayerID() == 4 or enemyList[i]:GetPlayerID() == 9) then
-			enemyBot = enemyList[i];
-		end
-	end
 	
 	local target;
 	if (bot:GetPlayerID() == 4) then
@@ -172,15 +166,9 @@ end
 -- Push
 function pushUpdateState()
 	local bot = GetBot();
-	local enemyBot;
+	local enemyBot = getEnemyBot();
 	local enemyList = GetUnitList(UNIT_LIST_ENEMY_HEROES);
 	local listLength = table.getn(enemyList);
-	for i = 1, listLength do
-		--print("Enemy " .. i .. " is " .. enemyList[i]:GetPlayerID());
-		if (enemyList[i]:GetPlayerID() == 4 or enemyList[i]:GetPlayerID() == 9) then
-			enemyBot = enemyList[i];
-		end
-	end
 	
 	if (bot:GetHealth() < 400) then
 		currentState = RETREAT;
@@ -193,15 +181,9 @@ end
 function pushThink()
 	--print("Thinkin to push");
 	local bot = GetBot();
-	local enemyBot;
+	local enemyBot= getEnemyBot();
 	local enemyList = GetUnitList(UNIT_LIST_ENEMY_HEROES);
 	local listLength = table.getn(enemyList);
-	for i = 1, listLength do
-		--print("Enemy " .. i .. " is " .. enemyList[i]:GetPlayerID());
-		if (enemyList[i]:GetPlayerID() == 4 or enemyList[i]:GetPlayerID() == 9) then
-			enemyBot = enemyList[i];
-		end
-	end
 	
 	local target;
 	if (bot:GetPlayerID() == 4) then
@@ -264,18 +246,7 @@ end
 function attackThink()
    -- Get current bot and enemy bot
    local bot = GetBot();
-   local enemyBot;
-
-   -- get enemy hero list and loop through looking for the nevermore bots
-   local enemyList = GetUnitList(UNIT_LIST_ENEMY_HEROES);
-   local listLength = table.getn(enemyList);
-   --print("Number of enemies: " .. listLength);
-   for i = 1, listLength do
-      -- print("Enemy " .. i .. " is " .. enemyList[i]:GetPlayerID());
-      if (enemyList[i]:GetPlayerID() == 4 or enemyList[i]:GetPlayerID() == 9) then
-	 enemyBot = enemyList[i];
-      end
-   end
+   local enemyBot = getEnemyBot();
 
    -- Temp to keep it alive
    bot:Action_AttackUnit(enemyBot, false);
@@ -311,6 +282,20 @@ function getEnemyTeam()
       enemyTeam = TEAM_RADIANT;
    end
    return enemyTeam;
+end
+
+function getEnemyBot()
+   local enemyBot;
+   -- get enemy hero list and loop through looking for the nevermore bots
+   local enemyList = GetUnitList(UNIT_LIST_ENEMY_HEROES);
+   local listLength = table.getn(enemyList);
+   --print("Number of enemies: " .. listLength);
+   for i = 1, listLength do
+      if (enemyList[i]:GetPlayerID() == 4 or enemyList[i]:GetPlayerID() == 9) then
+	 enemyBot = enemyList[i];
+      end
+   end
+   return enemyBot
 end
 ----------------------------------------------------------------------------------------------------
 
