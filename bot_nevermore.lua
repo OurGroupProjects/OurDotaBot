@@ -40,7 +40,7 @@ end
 function Think()
 	updateState();
 	--print("Applying state " .. currentState);	
-
+	--currentState = DEFEND;
 	
 	if (currentState == LANE) then
 		laneThink();
@@ -251,12 +251,39 @@ end
 
 -- Defend
 function defendUpdateState()
+	local bot = GetBot();
+	local targetTower;
+	local creepsLocation;
+
+	-- get the allied tower and the location for creeps
+	if (bot:GetPlayerID() == 9) then -- bot is Dire
+		targetTower = GetTower(TEAM_DIRE, TOWER_MID_1);
+		creepsLocation = GetLaneFrontLocation(TEAM_DIRE, LANE_MID, 0);
+	elseif (bot:GetPlayerID() == 4) then -- bot is Radiant
+		targetTower = GetTower(TEAM_RADIANT, TOWER_MID_1);
+		creepsLocation = GetLaneFrontLocation(TEAM_RADIANT, LANE_MID, 0);
+	end
+	
+	-- are creeps under allied tower
+	local creepsUnderTower = false;
+	if (GetUnitToLocationDistance(targetTower, creepsLocation) < 900) then
+		creepsUnderTower = true;
+	end
+	
+	-- if deaths > 0 and health < 50% and tower health > 30% --> retreat 
+	if ((GetHeroDeaths(bot:GetPlayerID()) > 0) and (bot:GetHealth() < (bot:GetMaxHealth()/100)*50) and (targetTower:GetHealth() > (targetTower:GetMaxHealth()/100)*30)) then
+		print("Changing state from DEFEND to RETREAT");
+		currentState = RETREAT;
+	elseif (not creepsUnderTower) then -- if there are no enemies under tower --> lane
+		print("Changing state from DEFEND to LANE");
+		currentState = LANE;
+	end
 end
+
 function defendThink()
 
 	--print("Defending");
 	local bot = GetBot();
-	
 	
 	-- where bot needs to go
 	local target;
@@ -328,7 +355,7 @@ function retreatThink()
 	-- where bot needs to go
 	local target;
 	
-	-- determine where base is
+	-- determine where base is 
 	target = GetLocationAlongLane(LANE_MID, .05);
 	
 	-- move to base
