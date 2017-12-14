@@ -219,7 +219,7 @@ function laneThink()
 	local attackableCreeps = bot:GetNearbyLaneCreeps(800, true);
 	local denyableCreeps = bot:GetNearbyLaneCreeps(800, false);
 	
-	local enemyCreeps = bot:GetNearbyLaneCreeps(1000, true);
+	local enemyCreepsAndHeroes = bot:GetNearbyLaneCreeps(1000, true);
 	local enemyHeroesToRaze = bot:GetNearbyHeroes(1000, true, BOT_MODE_NONE);
 	
 	for i=1,#denyableCreeps do
@@ -227,7 +227,7 @@ function laneThink()
     end
 	
 	for i=1,#enemyHeroesToRaze do
-        enemyCreeps[#enemyCreeps+1] = enemyHeroesToRaze[i]
+        enemyCreepsAndHeroes[#enemyCreepsAndHeroes+1] = enemyHeroesToRaze[i]
     end
 
 	local myDamage = bot:GetAttackDamage();
@@ -273,9 +273,9 @@ function laneThink()
 	print("I think my raze damage is " .. razeDamage);
 	
 	--Checks num of creeps that can be razed by
-	if (table.getn(enemyCreeps) > 0) then
-		for i = 1, table.getn(enemyCreeps) do
-			local creep = enemyCreeps[i];
+	if (table.getn(enemyCreepsAndHeroes) > 0) then
+		for i = 1, table.getn(enemyCreepsAndHeroes) do
+			local creep = enemyCreepsAndHeroes[i];
 			local creepHP = creep:GetHealth();
 			local creepEHP = creepHP;
 			if (creep:WasRecentlyDamagedByCreep(5)) then
@@ -313,8 +313,8 @@ function laneThink()
 	
 	local MIN_CREEP_TO_RAZE = 2;
 	
-	print("isfacing is " .. tostring(bot:IsFacingLocation(targetMeet,20)));
-	print("razes are " .. tostring(raze1) .. " " .. tostring(raze2) .. " " .. tostring(raze3));
+	--print("isfacing is " .. tostring(bot:IsFacingLocation(targetMeet,20)));
+	--print("razes are " .. tostring(raze1) .. " " .. tostring(raze2) .. " " .. tostring(raze3));
 	if (bot:IsFacingLocation(targetMeet, 20) and (raze1>=MIN_CREEP_TO_RAZE or raze2>=MIN_CREEP_TO_RAZE or raze3>=MIN_CREEP_TO_RAZE) and (bot:GetMana()/bot:GetMaxMana() > .3)) then
 		if (raze1>=MIN_CREEP_TO_RAZE) then
 			shortRazeSkill = bot:GetAbilityByName("nevermore_shadowraze1");
@@ -538,10 +538,13 @@ function attackThink()
    -- Temp to keep it alive
     if (GetUnitToUnitDistance(bot, enemyBot) < 450 and bot:IsFacingLocation(enemyBot:GetLocation(), 45)) then
 		bot:Action_UseAbility(bot:GetAbilityByName("nevermore_shadowraze1")));
+		print("Shortrazing this fucker");
 	elseif (GetUnitToUnitDistance(bot, enemyBot) > 200 and GetUnitToUnitDistance(bot, enemyBot) < 700 and bot:IsFacingLocation(enemyBot:GetLocation(), 15)) then
 		bot:Action_UseAbility(bot:GetAbilityByName("nevermore_shadowraze2")));
+		print("medrazing this fucker");
 	elseif (GetUnitToUnitDistance(bot, enemyBot) > 450 and GetUnitToUnitDistance(bot, enemyBot) < 950 and bot:IsFacingLocation(enemyBot:GetLocation(), 10)) then
 		bot:Action_UseAbility(bot:GetAbilityByName("nevermore_shadowraze3")));
+		print("longrazing this fucker");
 	else
 		bot:Action_AttackUnit(enemyBot, false);\
 	end;
@@ -652,10 +655,13 @@ end
 -- Function to decide if the bot should retreat
 function shouldRetreat()
    local bot = GetBot()
+   local enemyBot = getEnemyBot();
    return (
       bot:GetHealth()/bot:GetMaxHealth() < .2
-	 or bot:WasRecentlyDamagedByCreep(1)
+	 or bot:WasRecentlyDamagedByAnyHero(1)
+	 or bot:WasRecentlyDamagedByCreep(.75)
 	 or bot:WasRecentlyDamagedByTower(2)
+	 --or (bot:GetHealth() < enemyBot)
       -- or tookToMuchDamange
    )
 end
