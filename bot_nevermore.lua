@@ -128,7 +128,7 @@ function laneUpdateState()
 	if (bot:GetHealth() < 400) then
 		currentState = RETREAT;
 		print("Changing state from LANE TO RETREAT")
-	elseif (GetUnitToUnitDistance(bot, enemyBot) > GONE_DISTANCE_CONSTANT) then
+	elseif (enemyGone()) then
 		currentState = PUSH;
 		print("Changing state from LANE TO PUSH")
 	elseif (creepsUnderTower) then
@@ -217,7 +217,7 @@ function pushUpdateState()
 	if (bot:GetHealth() < 400) then
 		currentState = RETREAT;
 		print("Changing state from PUSH TO RETREAT")
-	elseif (GetUnitToUnitDistance(bot, enemyBot) < GONE_DISTANCE_CONSTANT) then
+	elseif (enemyGone()) then
 		currentState = LANE;
 		print("Changing state from PUSH TO LANE")
 	end
@@ -366,7 +366,7 @@ end
 function enemyGone()
    local bot = GetBot()
    enemyBot = getEnemyBot()
-   return (GetUnitToUnitDistance(bot, enemyBot) > 2000 or not enemyBot:CanBeSeen())
+   return (GetUnitToUnitDistance(bot, enemyBot) > GONE_DISTANCE_CONSTANT or not enemyBot:CanBeSeen())
 end
 ----------------------------------------------------------------------------------------------------
 
