@@ -271,9 +271,9 @@ function retreatUpdateState()
 	end 
 	
 	-- Defend the tower if the it is low health and you can afford to risk your life
-	if (targetTower:GetHealth()/targetTower:GetMaxHealth() <= 0.2) and (bot:GetHealth()/bot:GetMaxHealth() >= 0.75 or GetHeroDeaths(bot:GetPlayerID()) < 1) then 
-		currentState = DEFEND;
-	end
+	--if (targetTower:GetHealth()/targetTower:GetMaxHealth() <= 0.2) and (bot:GetHealth()/bot:GetMaxHealth() >= 0.75 or GetHeroDeaths(bot:GetPlayerID()) < 1) then 
+		--currentState = DEFEND;
+	--end
 end
 function retreatThink()
 
