@@ -38,14 +38,13 @@ local SKILL_BUILD = {
     SKILL_2, -- 7
     SKILL_1, -- 8
     SKILL_3, -- 9
-    -- 'special_bonus_attack_speed_20', -- 10
+    SKILL_3, -- 10
     SKILL_ULTI, -- 11
     SKILL_ULTI, -- 12
     SKILL_3, -- 13
-    SKILL_3, -- 14
     -- 'special_bonus_spell_amplify_6', -- 15
-    SKILL_3, -- 16
-    SKILL_ULTI, -- 18
+    --SKILL_3, -- 16
+    --SKILL_ULTI, -- 18
     -- 'special_bonus_unique_nevermore_1', -- 20
     -- 'special_bonus_attack_range_150', -- 25
 }
@@ -55,6 +54,7 @@ local TOTAL_SKILL_LEVEL = 0
 function LevelUp()
     local bot = GetBot();
 
+	--print("Things left to skill " .. #SKILL_BUILD);
     if(#SKILL_BUILD == 0) then
         return
     end
@@ -62,7 +62,7 @@ function LevelUp()
     local skill = bot:GetAbilityByName(SKILL_BUILD[1])
     local skill_level = skill:GetLevel()
 
-    if(skill:CanAbilityBeUpgraded()) then
+    if(skill:CanAbilityBeUpgraded() and (bot:GetAbilityPoints() > 0)) then
         bot:ActionImmediate_LevelAbility(SKILL_BUILD[1])
         local skill_level_after_upgrade = skill:GetLevel()
 
@@ -94,12 +94,12 @@ end
 
 
 function Think()
-
+	local bot = GetBot();
+	
 	LevelUp();
 
 	updateState();
-	--print("Applying state " .. currentState);	
-	--currentState = DEFEND;
+
 	
 	if (currentState == LANE) then
 		laneThink();
@@ -114,7 +114,7 @@ function Think()
 	end
 	
 	
-	local bot = GetBot();
+	
 	local botTeamName = "Glitch";
 	if (bot:GetTeam() == 2) then
 		botTeamName = "Radi";
@@ -135,17 +135,18 @@ function Think()
 		botStateName = "RETREAT"
 	end;
 	
-	--This is for making bugfixing much better
-	--if ( GameTime()%10 < 0.05) then
-	--	print(botTeamName .. " bot state  is " .. botStateName);
-	--end;
+	--This is for making bugfixing much better 
+	--[[
+	if ( GameTime()%10 < 0.05) then
+		print(botTeamName .. " bot state  is " .. botStateName);
+	end;
 		
 	
-	--if (bot:GetStashValue() > 10) then
-		--print("Things in my booty!");
-		--local myCourier = GetCourier(bot:GetTeam()-2);
-		--bot:ActionImmediate_Courier(myCourier, COURIER_ACTION_TAKE_AND_TRANSFER_ITEMS);
-	--end;
+	if (bot:GetStashValue() > 10) then
+		print("Things in my booty!");
+		local myCourier = GetCourier(bot:GetTeam()-2);
+		bot:ActionImmediate_Courier(myCourier, COURIER_ACTION_TAKE_AND_TRANSFER_ITEMS);
+	-; --]]
 	
 end
 
@@ -157,7 +158,6 @@ function laneUpdateState()
 	local enemyList = GetUnitList(UNIT_LIST_ENEMY_HEROES);
 	local listLength = table.getn(enemyList);
 	for i = 1, listLength do
-		--print("Enemy " .. i .. " is " .. enemyList[i]:GetPlayerID());
 		if (enemyList[i]:GetPlayerID() == 4 or enemyList[i]:GetPlayerID() == 9) then
 			enemyBot = enemyList[i];
 		end
@@ -229,7 +229,9 @@ function laneThink()
 	
 	local hitsAvailable = false;
 	
-	local earlyHitConstant = 7;
+	local earlyHitConstant = 8;
+	
+	local outOfAggroRange = true;
 	
 	--Checks if There are creeps that can be last hit.
 	if (table.getn(attackableCreeps) > 0) then
@@ -253,9 +255,13 @@ function laneThink()
 			if (myDamage + earlyHitConstant + rangedCreepBonus > creepEHP) then
 				hitsAvailable = true;
 			end
+			
 		end
 	end
-	
+	local enemyCreeps = bot:GetNearbyLaneCreeps(500, true);
+	if (table.getn(enemyCreeps) > 0) then
+		outOfAggroRange = false;
+	end
 	local botTeamName = "Glitch";
 	if (bot:GetTeam() == 2) then
 		botTeamName = "Radi";
@@ -265,7 +271,6 @@ function laneThink()
 
 	--If there are creeps to last hit, hit them
 	if (hitsAvailable) then
-		print(botTeamName .. " is trying to last-hit a creep");
 		for i = 1, table.getn(attackableCreeps) do
 			local creep = attackableCreeps[i];
 			local creepHP = creep:GetHealth();
@@ -287,6 +292,8 @@ function laneThink()
 				break;
 			end
 		end
+	elseif(outOfAggroRange) then
+		bot:Action_AttackUnit(enemyBot, true);
 	else  -- Othwerwise, be a bit behind the creep wave
 		bot:Action_MoveToLocation(target);
 	end
@@ -315,7 +322,6 @@ function pushUpdateState()
 	end
 end
 function pushThink()
-	--print("Pushing");
 	local bot = GetBot();
 	local enemyBot= getEnemyBot();
 	local enemyList = GetUnitList(UNIT_LIST_ENEMY_HEROES);
@@ -331,10 +337,23 @@ function pushThink()
 	
 	local attackableCreeps = bot:GetNearbyLaneCreeps(500, true);
 	
+	local nearbyCreeps = bot:GetNearbyLaneCreeps(700, true);
+	
+	local tower;
+	if (bot:GetPlayerID() == 9) then
+		tower = GetTower(TEAM_RADIANT,TOWER_MID_1)
+	end
+	if (bot:GetPlayerID() == 4) then
+		tower = GetTower(TEAM_DIRE,TOWER_MID_1);
+	end
+	
+	
+	
 	--Later, maybe make this prioritize low creeps, so it can get lh while pushing
 	if (table.getn(attackableCreeps) > 0) then
-		--print("See attackable creep");
 		bot:Action_AttackUnit(attackableCreeps[1], true);
+	elseif(#nearbyCreeps < 1) then
+		bot:Action_AttackUnit(tower, false)
 	else 
 		bot:Action_MoveToLocation(target);
 	end
@@ -554,7 +573,7 @@ function shouldRetreat()
    return (
       bot:GetHealth()/bot:GetMaxHealth() < .2
 	 or bot:WasRecentlyDamagedByCreep(1)
-	 or bot:WasRecentlyDamagedByTower(3)
+	 or bot:WasRecentlyDamagedByTower(2)
       -- or tookToMuchDamange
    )
 end
